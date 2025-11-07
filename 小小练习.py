@@ -1,0 +1,12 @@
+s = 'abc123456'
+n = len(s)
+print(s[0], s[-n])
+print(s[n-1], s[-1])
+print(s[2], s[-7])
+print(s[5], s[-4])
+print(s[2:5])
+print(s[-7:-4])
+print(s[2:])
+print(s[:2])
+print(s[::2])
+print(s[::-1])
