@@ -1,3 +1,4 @@
+import sys
 import time
 
 a = b = c = d = e = f = ""
@@ -8,6 +9,13 @@ def print_speak(speak):
         print(i, flush=True, end='')
         time.sleep(0.27)
     print()
+
+
+start = input("你是否准备好了？\n").strip()  # 接收用户输入
+if start == "开始吧":
+    pass
+else:
+    sys.exit()
 
 
 print_speak("闭上眼睛，在心底进行观想")
