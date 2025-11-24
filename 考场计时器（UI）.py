@@ -7,7 +7,7 @@ from pathlib import Path
 if sys.platform == "win32":
     import winsound
 
-CONFIG_FILE = "exam_config.json"
+CONFIG_FILE = "../AI/exam_config.json"
 HISTORY_FILE = "exam_history.log"
 
 class ExamManager:
