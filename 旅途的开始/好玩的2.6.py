@@ -17,12 +17,12 @@ def print_speak_method(sp, ti):
     time.sleep(ti)
 
 
-def continue_or_break(name):
-    name = input().strip()  # 接收用户输入
-    if name == "":
-        continue
-    else:
-        break
+# def continue_or_break(name):
+#     name = input().strip()  # 接收用户输入
+#     if name == "":
+#         continue
+#     else:
+#         break
 
 
 def toss():
@@ -51,6 +51,11 @@ def bend_your_knees():
     print_speak_method("恭迎您，陛下", 3.2)  # 陪伴您最长久的灰发女巫，夏绿蒂
 
 
+def baiwei():
+    time.sleep(0.3)
+    print_speak_method("验证通过，第一阶段解锁", 2)
+
+
 def black_rose():
     time.sleep(0.3)
     print_speak_method("验证通过，第二阶段解锁", 2)
@@ -74,6 +79,46 @@ def goodbye_charlotte():
     print_speak_method("中止......", 2.35)
     print_speak_method("水池中即将满溢而出的黑泥，悄无声息的在黄金色的辉光之中湮灭而去，洒落作遍地粉尘。", 3.5)
     print_speak_method("结束开溜", 1)
+
+
+def goodbye_charlotte_badend():
+    time.sleep(0.3)
+    print_speak_method("不对！", 1)
+    print_speak_method("最终验证结束", 1.5)
+    print_speak_method("深呼吸，好好回想陪您最长久的灰发女巫是谁。", 2.5)
+
+
+def black_rose_badend():
+    time.sleep(0.3)
+    print_speak_method("验证失败，无法启动第二阶段的权能", 2)
+    print_speak_method("别让黑色蔷薇失望啊！", 3.6)
+    print_speak_method("我的陛下", 2)
+
+
+def baiwei_badend():
+    time.sleep(0.3)
+    print_speak_method("验证失败，无法启动第一阶段的权能", 2)
+    print_speak_method("不会看了小凡就来验证了吧？", 2.5)
+    print_speak_method("看看原作再来", 2.5)
+
+
+def bend_your_knees_badend():
+    time.sleep(0.3)
+    print_speak_method("验证失败，你不是他", 1)
+
+
+def anchor_point_badend():
+    time.sleep(2)
+    print_speak_method("前往你的目的地", 2)
+    print_speak_method("糟了，迪拉克之海好像有点大", 2)
+    print_speak_method("再找找别的锚点吧！", 1)
+
+
+def toss_badend():
+    time.sleep(1.8)
+    print_speak_method("达成成就：硬币呢？", 3)
+    print_speak_method("抛掷吧！不要忘记开始", 3.2)
+    print_speak_method("因为，还有重要之人需要保护。", 1)
 
 
 start = input("你是否准备好了？\n").strip()  # 接收用户输入
@@ -126,8 +171,7 @@ while not task_completed:  # 外层循环，用于整个程序的重来机制
                                 else:
                                     break
                             if d == "白维":
-                                time.sleep(0.3)
-                                print_speak_method("验证通过，第一阶段解锁", 2)
+                                baiwei()
                                 while not task_completed:  # 第四层循环，用于验证关键词
                                     print_speak_method("第二阶段验证...", 0.3)
                                     print_speak("验证关键词：")
@@ -152,99 +196,48 @@ while not task_completed:  # 外层循环，用于整个程序的重来机制
                                                 goodbye_charlotte()
                                                 task_completed = True  # 设置任务完成标志
                                             else:
-                                                time.sleep(0.3)
-                                                print_speak("不对！")
-                                                time.sleep(1)
-                                                print_speak("最终验证结束")
-                                                time.sleep(1.5)
-                                                print_speak("深呼吸，好好回想陪您最长久的灰发女巫是谁。")
-                                                time.sleep(2.5)
+                                                goodbye_charlotte_badend()
                                                 continue  # 返回到最终验证的if前重新开始
                                     else:
-                                        time.sleep(0.3)
-                                        print_speak("验证失败，无法启动第二阶段的权能")
-                                        time.sleep(2)
-                                        print_speak("别让黑色蔷薇失望啊！")
-                                        time.sleep(3.6)
-                                        print_speak("我的陛下")
-                                        time.sleep(2)
+                                        black_rose_badend()
                                         continue  # 返回到第四层循环的if前重新开始
                             else:
-                                time.sleep(0.3)
-                                print_speak("验证失败，无法启动第一阶段的权能")
-                                time.sleep(2)
-                                print_speak("不会看了小凡就来验证了吧？")
-                                time.sleep(2.5)
-                                print_speak("看看原作再来")
-                                time.sleep(2.5)
+                                black_rose_badend()
                                 continue  # 返回到第三层循环的if前重新开始
                     else:
-                        time.sleep(0.3)
-                        print_speak("验证失败，你不是他")
-                        time.sleep(1)
+                        bend_your_knees_badend()
                         continue  # 返回到第二层循环的if前重新开始
             else:
-                time.sleep(2)
-                print_speak("前往你的目的地")
-                time.sleep(2)
-                print_speak("糟了，迪拉克之海好像有点大")
-                time.sleep(2)
-                print_speak("再找找别的锚点吧！")
-                time.sleep(1)
+                anchor_point_badend()
                 continue  # 返回到第一层循环的if前重新开始
     else:
-        time.sleep(1.8)
-        print_speak("达成成就：硬币呢？")
-        time.sleep(3)
-        print_speak("抛掷吧！不要忘记开始")
-        time.sleep(3.2)
-        print_speak("因为，还有重要之人需要保护。")
-        time.sleep(1)
+        toss_badend()
         continue  # 返回到外层循环的if前重新开始
 # 如果用户成功完成任务，程序继续执行后续内容
 time.sleep(2)
 print_speak("另一边...")
-print_speak("剑道场馆")
-time.sleep(1.75)
-print_speak("哥......你刚刚去哪儿了？")
-time.sleep(1.4)
-print_speak("人有三急。")
-time.sleep(0.95)
-print_speak("可刚刚那不是厕所的方向啊。")
-time.sleep(1.2)
-print_speak("我有说过我急的是这方面的吗？")
-time.sleep(1)
-print_speak("......")
-time.sleep(3)
-print_speak("好了，不逗你了")
-time.sleep(0.89)
-print_speak("抬手一点妹妹的额头：")
-time.sleep(1.2)
-print_speak("我要回去了。")
-time.sleep(1)
-print_speak("这就走了？")
-time.sleep(1.5)
-print_speak("没什么好看的，反而麻烦事不少，嗯，今晚我买菜下厨，记得早点回来。")
-time.sleep(4.6)
-print_speak("噢噢......")
-time.sleep(1.23)
-print_speak("柳生霜月懵懂地点头，旋即喊了声：")
-time.sleep(2.2)
-print_speak("对了，哥，我......")
-time.sleep(1)
-print_speak("她突然想到刚刚感受到的奇怪的记忆，望着白维的背影，只感觉突然间那么的似曾相识，像是另一个人。")
+print_speak_method("剑道场馆", 1.75)
+print_speak_method("哥......你刚刚去哪儿了？", 1.4)
+print_speak_method("人有三急。", 0.95)
+print_speak_method("可刚刚那不是厕所的方向啊。", 1.2)
+print_speak_method("我有说过我急的是这方面的吗？", 1)
+print_speak_method("......", 3)
+print_speak_method("好了，不逗你了", 0.89)
+print_speak_method("抬手一点妹妹的额头：", 1.2)
+print_speak_method("我要回去了。", 1)
+print_speak_method("这就走了？", 1.5)
+print_speak_method("没什么好看的，反而麻烦事不少，嗯，今晚我买菜下厨，记得早点回来。", 4.6)
+print_speak_method("噢噢......", 1.23)
+print_speak_method("柳生霜月懵懂地点头，旋即喊了声：", 2.2)
+print_speak_method("对了，哥，我......", 1)
+print_speak_method("她突然想到刚刚感受到的奇怪的记忆，望着白维的背影，只感觉突然间那么的似曾相识，像是另一个人。", 1.5)
 g = input("（请按回车：）").strip()
 if g == "怎么了？" or g == "怎么了":
     time.sleep(0.68)
     print_speak("唔，路上小心。")
 time.sleep(1.67)
-print_speak("她还是没说出口。")
-time.sleep(1.85)
-print_speak("“好，那是得当心，霓虹的车是移动的穿越设备来着”")
-time.sleep(1)
-print_speak("你说着闲话走远了。")
-time.sleep(2.5)
-print_speak("......不论如何，兄长就是兄长，其他的事不是那么重要......")
-time.sleep(3)
-print_speak("柳生霜月将多余的思绪抛下，这时再轻轻抚摸手腕，白皙的手腕上什么都没有，浮现的云纹也悄然消退。")
-time.sleep(5)
+print_speak_method("她还是没说出口。", 1.85)
+print_speak_method("“好，那是得当心，霓虹的车是移动的穿越设备来着”", 1)
+print_speak_method("你说着闲话走远了。", 2.5)
+print_speak_method("......不论如何，兄长就是兄长，其他的事不是那么重要......", 3)
+print_speak_method("柳生霜月将多余的思绪抛下，这时再轻轻抚摸手腕，白皙的手腕上什么都没有，浮现的云纹也悄然消退。", 5)
