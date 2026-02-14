@@ -24,12 +24,12 @@ if college_students == '发言':
 print('今朝剑指叠云处，炼蛊炼人还炼天')
 
 apple = 'eat'
-kill = 'eat'  # 修正了这里，将 kill 的值改为 'eat'
-I = 'you'
+kill = 'eat'
+i = 'you'
 kiss = 'you'
 
 # 检查条件是否满足
-if (apple == kill) and (I == kiss):
+if (apple == kill) and (i == kiss):
     print('一袋米要抗几楼（感受痛苦吧），')
     print('一袋米要抗二楼（思考痛苦吧），')
     print('一袋米要给多了（接受痛苦吧），')
@@ -39,7 +39,7 @@ if (apple == kill) and (I == kiss):
     print('颗颗有泥（从现在开始），')
     print('谁给你一袋米呦（让世界感受痛苦），')
     print('行了添水/辛辣天森/心累天塞（神罗天征）！')
-elif (apple == kill) and (I != kiss):
+elif (apple == kill) and (i != kiss):
     print('一袋米引发的战争')
 '''试了三次啊，三次，终于成功了'''
 

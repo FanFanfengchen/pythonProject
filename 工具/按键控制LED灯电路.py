@@ -27,7 +27,7 @@ try:
     while True:
         time.sleep(1)
         i = i + 1
-        print('程序已经运行了%d秒！', %i)
+        print('程序已经运行了%d秒！' % i)
 except KeyboardInterrupt:
     print('Bye!LED is OFF!')
 finally:
