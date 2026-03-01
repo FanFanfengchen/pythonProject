@@ -1,4 +1,6 @@
 import requests
 response = requests.get("https://books.toscrape.com")
-print(response)
-print(response.status_code)
+if response.ok:
+    print("请求成功")
+else:
+    print("请求失败")
