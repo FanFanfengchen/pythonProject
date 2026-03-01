@@ -1,5 +1,5 @@
 import unittest
-from core.my_calculator import my_adder
+from 核心.my_calculator import my_adder
 
 class TestMyAdder(unittest.TestCase):
     def test_positive_with_positive(self):
