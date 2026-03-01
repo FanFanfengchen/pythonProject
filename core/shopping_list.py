@@ -14,7 +14,3 @@ class ShoppingList:
         for price in self.shopping_list.values():
             total_price += price
         return total_price
-    
-def op():
-    with open("test_shopping_list.py", "w+") as f:
-        f.write("")

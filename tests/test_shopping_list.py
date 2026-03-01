@@ -1,5 +1,5 @@
 import unittest
-from shopping_list import ShoppingList
+from core.shopping_list import ShoppingList
 
 class TestShoppingList(unittest.TestCase):
     def setUp(self):

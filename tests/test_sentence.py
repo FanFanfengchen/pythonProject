@@ -1,5 +1,5 @@
 import unittest
-from sentence import Sentence
+from core.sentence import Sentence
 
 class TestSentence(unittest.TestCase):
     def setUp(self):
