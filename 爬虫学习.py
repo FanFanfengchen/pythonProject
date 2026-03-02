@@ -1,6 +1,7 @@
 import requests
-response = requests.get("https://books.toscrape.com")
+head = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
+response = requests.get("https://books.toscrape.com",headers=head)
 if response.ok:
-    print("请求成功")
+    print(response.text)
 else:
     print("请求失败")
