@@ -1,5 +1,3 @@
 {
-    "python.analysis.autoImportCompletions": true,
-    "python.analysis.typeCheckingMode": "standard",
-    "editorjumper.selectedIDE": "PyCharm"
+  "C_Cpp_Runner.msvcBatchPath": ""
 }
