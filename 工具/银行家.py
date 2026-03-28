@@ -1,3 +1,9 @@
+"""
+    银行模拟器
+    模拟在银行存钱、取钱、利息、查看余额，账单
+    额外：赚钱，跳过时间，投骰子梭哈
+"""
+
 import time
 import json
 import hashlib

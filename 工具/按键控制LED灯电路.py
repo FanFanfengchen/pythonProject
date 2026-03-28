@@ -1,3 +1,7 @@
+"""
+这段代码是示例代码
+按键控制LED灯电路
+"""
 import time
 
 import RPi.GPIO as GPIO

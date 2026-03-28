@@ -1,3 +1,6 @@
+"""
+    内存燃烧器（来源：火柴人vs编程）
+"""
 import string  # 后面的递归要用
 
 
@@ -33,4 +36,4 @@ def nuke(n):
     return a
 
 
-print(nuke(10))  # 该递归不要随便执行
+# print(nuke(10))  # 该递归不要随便执行
