@@ -1,10 +1,10 @@
 """计算器模块测试
 
-该模块测试 my_calculator.py 中的 my_adder 函数功能。
+该模块测试 简单的数学运算.py 中的 my_adder 函数功能。
 """
 
 import unittest
-from 核心.my_calculator import my_adder
+from 核心.简单的数学运算 import my_adder
 
 class TestMyAdder(unittest.TestCase):
     """测试 my_adder 函数的测试类

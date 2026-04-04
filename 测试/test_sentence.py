@@ -1,6 +1,6 @@
 """句子处理模块测试
 
-该模块测试 sentence.py 中的 Sentence 类功能。
+该模块测试 句子的基本操作.py 中的 Sentence 类功能。
 """
 
 import unittest

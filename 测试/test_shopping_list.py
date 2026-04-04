@@ -1,6 +1,6 @@
 """购物清单模块测试
 
-该模块测试 shopping_list.py 中的 ShoppingList 类功能。
+该模块测试 供购物清单的管理.py 中的 ShoppingList 类功能。
 """
 
 import unittest
