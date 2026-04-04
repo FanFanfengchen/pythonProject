@@ -55,5 +55,14 @@
   "C_Cpp_Runner.useLeakSanitizer": false,
   "C_Cpp_Runner.showCompilationTime": false,
   "C_Cpp_Runner.useLinkTimeOptimization": false,
-  "C_Cpp_Runner.msvcSecureNoWarnings": false
+  "C_Cpp_Runner.msvcSecureNoWarnings": false,
+  "C_Cpp.enabled": false,
+  "C_Cpp.intelliSenseEngine": "disabled",
+  "clangd.path": "C:\\Program Files\\LLVM\\bin\\clangd.exe",
+  "clangd.arguments": [
+    "--background-index",
+    "--compile-commands-dir=${workspaceFolder}",
+    "--header-insertion=never",
+    "--query-driver=C:\\mingw64\\bin\\gcc.exe"
+  ]
 }

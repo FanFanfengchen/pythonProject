@@ -1,0 +1,7 @@
+[
+  {
+    "directory": "d:\\Python\\pythonProject",
+    "command": "C:/mingw64/bin/gcc.exe -c main.c -o main.o -I C:/mingw64/x86_64-w64-mingw32/include -I C:/mingw64/include -I C:/mingw64/lib/gcc/x86_64-w64-mingw32/15.2.0/include -I C:/mingw64/lib/gcc/x86_64-w64-mingw32/15.2.0/include-fixed",
+    "file": "main.c"
+  }
+]
