@@ -135,95 +135,66 @@ PythonProject/
 
 ---
 
-## 安装与设置
-
-### 1. 克隆项目
-
-```bash
-git clone https://github.com/FanFanfengchen/pythonProject.git
-cd pythonProject
-```
-
-### 2. 环境要求
+## 环境要求
 
 - Python 3.13 或更高版本
-- 标准库（无需额外依赖）
+- 部分代码需要安装依赖（见 requirements.txt）
 
-### 3. 验证安装
+### 安装依赖
 
 ```bash
-# 检查 Python 版本
-python --version
-
-# 运行测试
-python -m unittest discover 测试
+pip install -r requirements.txt
 ```
 
 ---
 
-## 使用方法
+## 核心模块说明
 
-### 1. 导入核心模块
-
-```python
-# 导入计算器模块
-from 核心.my_calculator import my_adder
-
-# 导入句子处理模块
-from 核心.sentence import Sentence
-
-# 导入购物清单模块
-from 核心.shopping_list import ShoppingList
-```
-
-### 2. 使用示例
-
-#### 计算器模块
+### 1. 计算器模块 (`核心/简单的数学运算.py`)
 
 ```python
-# 使用计算器
+from 核心.简单的数学运算 import my_adder
+
 result = my_adder(5, 3)
 print(f"5 + 3 = {result}")  # 输出: 5 + 3 = 8
 ```
 
-#### 句子处理模块
+### 2. 句子处理模块 (`核心/句子的基本操作.py`)
 
 ```python
-# 使用句子处理
+from 核心.句子的基本操作 import Sentence
+
 my_sentence = Sentence("Hello, world!")
-print(f"字母数量: {my_sentence.letter_count()}")  # 输出: 字母数量: 13
-print(f"单词数量: {my_sentence.word_count()}")  # 输出: 单词数量: 2
-print(f"大写形式: {my_sentence.upper()}")  # 输出: 大写形式: HELLO, WORLD!
+print(f"字母数量: {my_sentence.letter_count()}")
+print(f"单词数量: {my_sentence.word_count()}")
+print(f"大写形式: {my_sentence.upper()}")
 ```
 
-#### 购物清单模块
+### 3. 购物清单模块 (`核心/供购物清单的管理.py`)
 
 ```python
-# 使用购物清单
+from 核心.供购物清单的管理 import ShoppingList
+
 items = {"牙刷": 5, "沐浴露": 20, "毛巾": 15, "洗发水": 30, "电池": 7}
 my_list = ShoppingList(items)
-print(f"商品数量: {my_list.get_item_count()}")  # 输出: 商品数量: 5
-print(f"总价格: {my_list.get_total_price()}")  # 输出: 总价格: 77
+print(f"商品数量: {my_list.get_item_count()}")
+print(f"总价格: {my_list.get_total_price()}")
 ```
 
 ---
 
 ## 测试
 
-项目包含完整的测试文件，使用 Python 的 `unittest` 框架进行测试：
+项目包含单元测试练习，使用 Python 的 `unittest` 框架：
 
-- `测试/test_calculator.py` - 测试计算器功能
-- `测试/test_sentence.py` - 测试句子处理功能
-- `测试/test_shopping_list.py` - 测试购物清单功能
+- `测试/test_calculator.py` - 计算器功能测试
+- `测试/test_sentence.py` - 句子处理测试
+- `测试/test_shopping_list.py` - 购物清单测试
 
-### 运行测试
+运行测试：
 
 ```bash
-# 运行所有测试
 python -m unittest discover 测试
-
-# 运行特定测试文件
-python -m unittest 测试/test_calculator.py
 ```
 
 ---
@@ -243,58 +214,11 @@ python -m unittest 测试/test_calculator.py
 
 ---
 
-## 贡献指南
-
-### 如何贡献
-
-1. **Fork 项目**
-2. **创建分支** (`git checkout -b feature/AmazingFeature`)
-3. **提交更改** (`git commit -m 'Add some AmazingFeature'`)
-4. **推送到分支** (`git push origin feature/AmazingFeature`)
-5. **创建 Pull Request**
-
-### 代码规范
+## 代码规范
 
 - 遵循 PEP 8 代码风格指南
-- 为新功能添加测试用例
 - 保持代码简洁明了
 - 添加适当的注释说明
-
----
-
-## 故障排除
-
-### 常见问题
-
-1. **导入错误**: 确保 Python 解释器能够找到核心模块
-   - 解决方案: 在项目根目录运行代码，或确保核心目录在 Python 路径中
-
-2. **测试失败**: 检查测试用例是否与代码实现一致
-   - 解决方案: 查看测试错误信息，修复代码或更新测试用例
-
-3. **Git 拉取错误**: 遇到远程仓库访问问题
-   - 解决方案: 确保网络连接正常，或使用 HTTPS 协议访问仓库
-
-### 联系支持
-
-如果遇到其他问题，请通过 GitHub Issues 提交问题描述，我们会尽快回复。
-
----
-
-## 许可证
-
-本项目采用 MIT 许可证，详见 LICENSE 文件。
-
----
-
-## 后续规划
-
-- [ ] 添加更多核心功能模块
-- [ ] 完善测试覆盖
-- [ ] 添加项目依赖管理
-- [ ] 提供更多使用示例和文档
-- [ ] 扩展图形界面功能
-- [ ] 添加更多算法实现
 
 ---
 

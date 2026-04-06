@@ -7,10 +7,41 @@
 import time
 import json
 import hashlib
+import logging
 import random
 import os
-from decimal import Decimal
+from dataclasses import dataclass, field
+from decimal import Decimal, InvalidOperation
 from datetime import datetime
+from typing import Optional
+
+# ── 日志配置 ─────────────────────────────────────────────────────────────────
+logger = logging.getLogger(__name__)
+
+
+# ── 结构化操作结果 ─────────────────────────────────────────────────────────────
+@dataclass
+class OperationResult:
+    """
+    业务层的统一返回结构。
+    UI 层根据 success 和 messages 决定如何展示，
+    业务层不再直接调用 print()。
+    """
+    success: bool
+    messages: list[str] = field(default_factory=list)
+    balance: Optional[Decimal] = None
+    amount: Optional[Decimal] = None
+    extra: dict = field(default_factory=dict)
+
+    def add_msg(self, msg: str) -> "OperationResult":
+        """链式添加消息"""
+        self.messages.append(msg)
+        return self
+
+    def print_messages(self) -> None:
+        """UI 助手方法：将所有消息依次打印（UI 层调用）"""
+        for msg in self.messages:
+            print(msg)
 
 
 def clear_screen():
@@ -133,192 +164,193 @@ class BankAccount:
         """
         return self.password_hash == self._hash_password(password)
     
-    def deposit(self, amount):
+    def deposit(self, amount) -> OperationResult:
         """
         存款
-        
+
         Args:
             amount (float): 存款金额
-            
+
         Returns:
-            bool: 存款是否成功
+            OperationResult: 包含操作结果、提示消息和最新余额
         """
         try:
             amount = Decimal(str(amount))
-            if amount <= 0:
-                print("错误：存款金额必须大于0")
-                return False
-            
-            # 处理存款：优先抵扣欠款
+        except (InvalidOperation, ValueError) as e:
+            logger.warning("存款金额格式无效: input=%s, error=%s", amount, e)
+            return OperationResult(False).add_msg(f"错误：无效的金额格式 '{amount}'")
+
+        if amount <= 0:
+            return OperationResult(False).add_msg("错误：存款金额必须大于0")
+
+        result = OperationResult(True, amount=amount)
+
+        try:
             if self.balance < 0:
                 # 有欠款，优先抵扣
                 debt_amount = abs(self.balance)
                 if amount >= debt_amount:
-                    # 存款足够抵扣所有欠款
                     remaining_amount = amount - debt_amount
                     self.balance = remaining_amount
-                    self._add_transaction("存款", amount, f"账户存款，抵扣欠款{format_currency(debt_amount)}元，剩余{format_currency(remaining_amount)}元")
-                    print(f"存款成功！存款金额：{format_currency(amount)}元")
-                    print(f"已抵扣欠款：{format_currency(debt_amount)}元")
-                    print(f"剩余存款：{format_currency(remaining_amount)}元")
-                    print(f"当前余额：{format_currency(self.balance)}元")
+                    self._add_transaction("存款", amount,
+                                          f"账户存款，抵扣欠款{format_currency(debt_amount)}元，"
+                                          f"剩余{format_currency(remaining_amount)}元")
+                    result.add_msg(f"存款成功！存款金额：{format_currency(amount)}元")
+                    result.add_msg(f"已抵扣欠款：{format_currency(debt_amount)}元")
+                    result.add_msg(f"剩余存款：{format_currency(remaining_amount)}元")
+                    result.add_msg(f"当前余额：{format_currency(self.balance)}元")
                 else:
-                    # 存款不足以抵扣所有欠款
                     self.balance += amount
-                    self._add_transaction("存款", amount, f"账户存款，部分抵扣欠款")
-                    print(f"存款成功！存款金额：{format_currency(amount)}元")
-                    print(f"已部分抵扣欠款，当前欠款：{format_currency(abs(self.balance))}元")
+                    self._add_transaction("存款", amount, "账户存款，部分抵扣欠款")
+                    result.add_msg(f"存款成功！存款金额：{format_currency(amount)}元")
+                    result.add_msg(f"已部分抵扣欠款，当前欠款：{format_currency(abs(self.balance))}元")
             else:
-                # 无欠款，直接增加余额
                 self.balance += amount
                 self._add_transaction("存款", amount, "账户存款")
-                print(f"存款成功！当前余额：{format_currency(self.balance)}")
-            
-            return True
+                result.add_msg(f"存款成功！当前余额：{format_currency(self.balance)}")
+
+            result.balance = self.balance
+            return result
+
         except Exception as e:
-            print(f"错误：{e}")
-            return False
+            logger.exception("存款操作异常: amount=%s", amount)
+            return OperationResult(False).add_msg(f"错误：{e}")
     
-    def withdraw(self, amount):
+    def withdraw(self, amount) -> OperationResult:
         """
         取款
-        
+
         Args:
             amount (float): 取款金额
-            
+
         Returns:
-            bool: 取款是否成功
+            OperationResult: 包含操作结果、提示消息和最新余额
         """
         try:
             amount = Decimal(str(amount))
-            if amount <= 0:
-                print("错误：取款金额必须大于0")
-                return False
-            
-            # 允许透支，实现欠款功能
+        except (InvalidOperation, ValueError) as e:
+            logger.warning("取款金额格式无效: input=%s, error=%s", amount, e)
+            return OperationResult(False).add_msg(f"错误：无效的金额格式 '{amount}'")
+
+        if amount <= 0:
+            return OperationResult(False).add_msg("错误：取款金额必须大于0")
+
+        result = OperationResult(True, amount=amount)
+
+        try:
             self.balance -= amount
-            
+
             if self.balance < 0:
-                # 产生欠款
-                self._add_transaction("取款", amount, f"账户取款，产生欠款{format_currency(abs(self.balance))}元")
-                print(f"取款成功！取款金额：{format_currency(amount)}元")
-                print(f"当前欠款：{format_currency(abs(self.balance))}元")
+                self._add_transaction("取款", amount,
+                                      f"账户取款，产生欠款{format_currency(abs(self.balance))}元")
+                result.add_msg(f"取款成功！取款金额：{format_currency(amount)}元")
+                result.add_msg(f"当前欠款：{format_currency(abs(self.balance))}元")
             else:
-                # 无欠款
                 self._add_transaction("取款", amount, "账户取款")
-                print(f"取款成功！当前余额：{format_currency(self.balance)}")
-            
-            return True
+                result.add_msg(f"取款成功！当前余额：{format_currency(self.balance)}")
+
+            result.balance = self.balance
+            return result
+
         except Exception as e:
-            print(f"错误：{e}")
-            return False
+            logger.exception("取款操作异常: amount=%s", amount)
+            return OperationResult(False).add_msg(f"错误：{e}")
     
-    def check_balance(self):
+    def check_balance(self) -> Decimal:
         """
         查看余额
+
+        Returns:
+            Decimal: 当前余额
         """
-        print(f"当前余额：{self.balance:.2f}")
+        return self.balance
     
-    def calculate_interest(self):
+    def calculate_interest(self) -> OperationResult:
         """
         计算并添加利息
-        
+
         Returns:
-            bool: 计算利息是否成功
+            OperationResult: 操作结果
         """
         try:
-            # 欠款状态下暂停利息计算
             if self.balance <= 0:
-                print("当前处于欠款状态，暂停利息计算")
-                return False
-            
+                return OperationResult(False).add_msg("当前处于欠款状态，暂停利息计算")
+
             today = datetime.now().date()
-            
-            # 处理last_interest_date可能是未来日期的情况
+
             if self.last_interest_date > today:
-                # 如果last_interest_date是未来日期，重置为今天
                 self.last_interest_date = today
-                print("利息计算日期已重置为今天")
-            
+                logger.info("利息计算日期已重置为今天")
+
             days_passed = (today - self.last_interest_date).days
-            
-            # 计算利息，至少计算1天
             daily_interest_rate = self.interest_rate / Decimal('365')
             interest = self.balance * daily_interest_rate * Decimal(str(max(days_passed, 1)))
-            
+
             if interest > 0:
                 self.balance += interest
                 self._add_transaction("利息", interest, "账户利息计算")
                 self.last_interest_date = today
-                print(f"利息计算成功！已添加利息：{format_currency(interest)}，当前余额：{format_currency(self.balance)}")
-                return True
+                return OperationResult(True, balance=self.balance, amount=interest).add_msg(
+                    f"利息计算成功！已添加利息：{format_currency(interest)}，当前余额：{format_currency(self.balance)}"
+                )
             else:
-                print("当前余额为0，无法计算利息")
-                return False
+                return OperationResult(False).add_msg("当前余额为0，无法计算利息")
+
         except Exception as e:
-            print(f"错误：{e}")
-            return False
+            logger.exception("利息计算异常")
+            return OperationResult(False).add_msg(f"错误：{e}")
     
-    def check_and_compound_interest(self):
+    def check_and_compound_interest(self) -> OperationResult:
         """
         检查是否需要根据复利频率计算利息并自动添加
-        
+
         Returns:
-            bool: 是否进行了复利计算
+            OperationResult: 是否进行了复利计算
         """
         try:
-            # 欠款状态下暂停复利计算
             if self.balance <= 0:
-                return False
-            
+                return OperationResult(False)
+
             today = datetime.now().date()
-            
-            # 处理last_compounding_date可能是未来日期的情况
+
             if self.last_compounding_date > today:
-                # 如果last_compounding_date是未来日期，重置为今天
                 self.last_compounding_date = today
-                print("复利计算日期已重置为今天")
-            
-            # 确定是否需要计算复利
+                logger.info("复利计算日期已重置为今天")
+
             need_compounding = False
-            
-            # 根据复利频率检查是否达到复利间隔
             if self.compounding_frequency == 'daily':
-                # 每日复利：每天计算一次
                 need_compounding = True
             elif self.compounding_frequency == 'monthly':
-                # 每月复利：检查是否是新的月份
-                need_compounding = (today.year != self.last_compounding_date.year or 
-                                  today.month != self.last_compounding_date.month)
+                need_compounding = (today.year != self.last_compounding_date.year or
+                                    today.month != self.last_compounding_date.month)
             elif self.compounding_frequency == 'quarterly':
-                # 每季度复利：检查是否是新的季度
                 current_quarter = (today.month - 1) // 3 + 1
                 last_quarter = (self.last_compounding_date.month - 1) // 3 + 1
-                need_compounding = (today.year != self.last_compounding_date.year or 
-                                  current_quarter != last_quarter)
+                need_compounding = (today.year != self.last_compounding_date.year or
+                                    current_quarter != last_quarter)
             elif self.compounding_frequency == 'annually':
-                # 每年复利：检查是否是新的年份
                 need_compounding = today.year != self.last_compounding_date.year
-            
+
             if need_compounding and self.balance > 0:
-                # 计算复利期间的天数
                 days_since_last_compounding = (today - self.last_compounding_date).days
-                
-                # 计算复利
                 daily_interest_rate = self.interest_rate / Decimal('365')
                 interest = self.balance * daily_interest_rate * Decimal(str(max(days_since_last_compounding, 1)))
-                
+
                 if interest > 0:
                     self.balance += interest
-                    self._add_transaction(f"{self.compounding_frequency}复利", interest, f"{self.compounding_frequency}复利计算")
+                    self._add_transaction(f"{self.compounding_frequency}复利", interest,
+                                          f"{self.compounding_frequency}复利计算")
                     self.last_compounding_date = today
-                    print(f"{self.compounding_frequency}复利计算成功！已添加利息：{format_currency(interest)}，当前余额：{format_currency(self.balance)}")
-                    return True
-            
-            return False
+                    return OperationResult(True, balance=self.balance, amount=interest).add_msg(
+                        f"{self.compounding_frequency}复利计算成功！"
+                        f"已添加利息：{format_currency(interest)}，当前余额：{format_currency(self.balance)}"
+                    )
+
+            return OperationResult(False)
+
         except Exception as e:
-            print(f"错误：{e}")
-            return False
+            logger.exception("复利计算异常")
+            return OperationResult(False).add_msg(f"错误：{e}")
     
     def _add_transaction(self, transaction_type, amount, description=""):
         """
@@ -649,73 +681,84 @@ class BankAccount:
         self.last_interest_date = self.last_work_date
         print(f"⏰  工作完成，一天已过去，当前日期：{self.last_work_date}")
         
+    def work(self) -> OperationResult:
+        """
+        工作收入功能
+
+        Returns:
+            OperationResult: 包含本次工资、余额变化和提示消息
+        """
+        result = OperationResult(True)
+
+        # 重置连续未工作次数
+        self.consecutive_non_work_count = 0
+
+        # 工作一次算一天
+        self.work_days += 1
+        result.add_msg(f"📅 工作天数：{self.work_days} 天")
+
+        from datetime import timedelta
+        self.last_work_date += timedelta(days=1)
+        self.last_interest_date = self.last_work_date
+        result.add_msg(f"⏰  工作完成，一天已过去，当前日期：{self.last_work_date}")
+
         # 计算工作收入
         if self.salary_reset_flag or self.last_work_income == 0:
-            # 首次工作或重置后，在1000至100000000范围内随机生成
             income = random.randint(1000, 100000000)
             self.salary_reset_flag = False
-            print("💼 新工作周期开始，获得随机工资！")
+            result.add_msg("💼 新工作周期开始，获得随机工资！")
         else:
-            # 后续工作，实现上下起伏均匀的波动机制
-            # 波动范围为上一次收入的5%到20%
-            fluctuation_range = int(self.last_work_income * 0.05)
-            if fluctuation_range < 100:
-                fluctuation_range = 100  # 确保最小波动为100
-            
-            # 随机波动方向
+            fluctuation_range = max(int(self.last_work_income * 0.05), 100)
             fluctuation = random.randint(-fluctuation_range, fluctuation_range)
-            income = self.last_work_income + fluctuation
-            
-            # 确保收入不为负数
-            if income < 1000:
-                income = 1000
-            
-            print("💼 持续工作中，工资有所波动")
-        
-        # 记录本次收入
+            income = max(self.last_work_income + fluctuation, 1000)
+            result.add_msg("💼 持续工作中，工资有所波动")
+
         self.last_work_income = income
-        
-        # 处理收入：优先抵扣欠款
         income_decimal = Decimal(str(income))
+        result.amount = income_decimal
+
+        # 处理收入：优先抵扣欠款
         if self.balance < 0:
-            # 有欠款，优先抵扣
             debt_amount = abs(self.balance)
             if income_decimal >= debt_amount:
-                # 收入足够抵扣所有欠款
                 remaining_income = income_decimal - debt_amount
                 self.balance = remaining_income
-                self._add_transaction("工作收入", income_decimal, f"工作收入，抵扣欠款{format_currency(debt_amount)}元，剩余{format_currency(remaining_income)}元")
-                print(f"工作收入：{format_currency(income_decimal)}元")
-                print(f"已抵扣欠款：{format_currency(debt_amount)}元")
-                print(f"剩余收入：{format_currency(remaining_income)}元")
+                self._add_transaction("工作收入", income_decimal,
+                                      f"工作收入，抵扣欠款{format_currency(debt_amount)}元，"
+                                      f"剩余{format_currency(remaining_income)}元")
+                result.add_msg(f"工作收入：{format_currency(income_decimal)}元")
+                result.add_msg(f"已抵扣欠款：{format_currency(debt_amount)}元")
+                result.add_msg(f"剩余收入：{format_currency(remaining_income)}元")
             else:
-                # 收入不足以抵扣所有欠款
                 self.balance += income_decimal
-                self._add_transaction("工作收入", income_decimal, f"工作收入，部分抵扣欠款")
-                print(f"工作收入：{format_currency(income_decimal)}元")
-                print(f"已部分抵扣欠款，当前欠款：{format_currency(abs(self.balance))}元")
+                self._add_transaction("工作收入", income_decimal, "工作收入，部分抵扣欠款")
+                result.add_msg(f"工作收入：{format_currency(income_decimal)}元")
+                result.add_msg(f"已部分抵扣欠款，当前欠款：{format_currency(abs(self.balance))}元")
         else:
-            # 无欠款，直接增加余额
             self.balance += income_decimal
             self._add_transaction("工作收入", income_decimal, "工作收入")
-            print(f"工作收入：{format_currency(income_decimal)}元")
-            print(f"当前余额：{format_currency(self.balance)}元")
-        
-        # 工作完成后标记为一天结束
+            result.add_msg(f"工作收入：{format_currency(income_decimal)}元")
+            result.add_msg(f"当前余额：{format_currency(self.balance)}元")
+
+        result.balance = self.balance
         self.day_ended = True
-        return income_decimal
-    
-    def increment_non_work_count(self):
+        return result
+
+    def increment_non_work_count(self) -> OperationResult:
         """
-        增加连续未工作次数，并检查是否需要重置工资
+        增加连续未工作次数，检查是否需要重置工资
+
+        Returns:
+            OperationResult: 若触发工资重置则 success=True 并附带提示
         """
         self.consecutive_non_work_count += 1
-        
-        # 连续三次未工作，重置工资
+
         if self.consecutive_non_work_count >= 3:
             self.salary_reset_flag = True
             self.consecutive_non_work_count = 0
-            print("⚠️  连续三次未工作，工资已重置！")
+            return OperationResult(True).add_msg("⚠️  连续三次未工作，工资已重置！")
+
+        return OperationResult(False)
     
     def to_dict(self):
         """
@@ -911,7 +954,7 @@ class BankSystem:
         # 创建新账户
         new_account = BankAccount(account_id, password, initial_balance)
         
-        # 如果有初始存款，添加交易记录
+        # 如果有初始存款，添加交易记录（静默执行）
         if initial_balance > 0:
             new_account.deposit(initial_balance)
         
@@ -964,7 +1007,7 @@ class BankSystem:
             print("错误：密码错误")
             return None
         
-        # 登录成功，计算利息并检查复利
+        # 登录成功，计算利息并检查复利（静默执行，不打印消息）
         account.calculate_interest()
         account.check_and_compound_interest()
         self._save_data()
@@ -1333,7 +1376,7 @@ class BankSystem:
                 account.day_ended = False
                 print("=" * 80)
             
-            # 每次进入菜单时检查复利
+            # 每次进入菜单时检查复利（静默执行）
             account.check_and_compound_interest()
             
             print("\n" + "=" * 80)
@@ -1371,26 +1414,26 @@ class BankSystem:
                 if choice == '1':
                     amount = self._get_valid_input("请输入要存入的金额：")
                     if amount is not None:
-                        account.deposit(amount)
+                        account.deposit(amount).print_messages()
                         self._save_data()
-                    account.increment_non_work_count()
+                    account.increment_non_work_count().print_messages()
                 elif choice == '2':
-                    account.check_balance()
-                    account.increment_non_work_count()
+                    print(f"当前余额：{account.check_balance():.2f}")
+                    account.increment_non_work_count().print_messages()
                 elif choice == '3':
                     amount = self._get_valid_input("请输入要取出的金额：")
                     if amount is not None:
-                        account.withdraw(amount)
+                        account.withdraw(amount).print_messages()
                         self._save_data()
-                    account.increment_non_work_count()
+                    account.increment_non_work_count().print_messages()
                 elif choice == '4':
                     account.print_transaction_history()
-                    account.increment_non_work_count()
+                    account.increment_non_work_count().print_messages()
                 elif choice == '5':
-                    account.calculate_interest()
-                    account.check_and_compound_interest()
+                    account.calculate_interest().print_messages()
+                    account.check_and_compound_interest().print_messages()
                     self._save_data()
-                    account.increment_non_work_count()
+                    account.increment_non_work_count().print_messages()
                 elif choice == '6':
                     self.skip_days(account)
                     account.increment_non_work_count()
@@ -1401,7 +1444,7 @@ class BankSystem:
                     self.bill_management(account)
                     account.increment_non_work_count()
                 elif choice == '9':
-                    account.work()
+                    account.work().print_messages()
                     self._save_data()
                     # 工作选项，不增加未工作次数
                 elif choice == '10':
