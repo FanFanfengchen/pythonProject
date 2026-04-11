@@ -122,3 +122,15 @@ print(f"热烈欢迎{spor_2_name}参加本次运动会".center(30, "*"), end='\n
 print(f"热烈欢迎{spor_3_name}参加本次运动会".center(30, "*"), end='\n')
 print(f"热烈欢迎{spor_4_name}参加本次运动会".center(30, "*"), end='\n')
 print(f"热烈欢迎{spor_5_name}参加本次运动会".center(30, "*"), end='\n')
+
+# 步骤5 搭建运动员欢迎系统V3.0
+'''运动员欢迎系统V3.0'''
+spor_1_name = input("请输入第1个运动员的姓名：")  # 输入第1个运动员的姓名
+spor_1_event = input("请输入第1个运动员的运动项目：")  # 输入第1个运动员的运动项目
+spor_2_name = input("请输入第2个运动员的姓名：")  # 输入第2个运动员的姓名
+spor_2_event = input("请输入第2个运动员的运动项目：")  # 输入第2个运动员的运动项目
+spor_3_name = input("请输入第3个运动员的姓名：")  # 输入第3个运动员的姓名
+spor_3_event = input("请输入第3个运动员的运动项目：")  # 输入第3个运动员的运动项目
+
+# 使用format格式化输出运动员欢迎语句
+print("热烈欢迎{0}运动员{1}、{2}运动员{3}、{4}运动员{5}参加本次运动会".format(spor_1_event, spor_1_name, spor_2_event, spor_2_name, spor_3_event, spor_3_name))
