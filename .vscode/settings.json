@@ -1,7 +1,7 @@
 {
-  "C_Cpp_Runner.cCompilerPath": "gcc",
-  "C_Cpp_Runner.cppCompilerPath": "g++",
-  "C_Cpp_Runner.debuggerPath": "gdb",
+  "C_Cpp_Runner.cCompilerPath": "C:/mingw64/bin/gcc.exe",
+  "C_Cpp_Runner.cppCompilerPath": "C:/mingw64/bin/g++.exe",
+  "C_Cpp_Runner.debuggerPath": "C:/mingw64/bin/gdb.exe",
   "C_Cpp_Runner.cStandard": "",
   "C_Cpp_Runner.cppStandard": "",
   "C_Cpp_Runner.msvcBatchPath": "",
@@ -35,13 +35,15 @@
   ],
   "C_Cpp_Runner.enableWarnings": true,
   "C_Cpp_Runner.warningsAsError": false,
-  "C_Cpp_Runner.compilerArgs": [],
-  "C_Cpp_Runner.linkerArgs": [],
-  "C_Cpp_Runner.includePaths": [],
-  "C_Cpp_Runner.includeSearch": [
-    "*",
-    "**/*"
+  "C_Cpp_Runner.compilerArgs": [
+    "-finput-charset=UTF-8",
+    "-fexec-charset=UTF-8"
   ],
+  "C_Cpp_Runner.linkerArgs": [],
+  "C_Cpp_Runner.includePaths": [
+    "d:/Python/pythonProject"
+  ],
+  "C_Cpp_Runner.includeSearch": [],
   "C_Cpp_Runner.excludeSearch": [
     "**/build",
     "**/build/**",

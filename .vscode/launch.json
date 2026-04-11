@@ -11,7 +11,7 @@
       "cwd": "d:/Python/pythonProject",
       "program": "d:/Python/pythonProject/build/Debug/outDebug",
       "MIMode": "gdb",
-      "miDebuggerPath": "gdb",
+      "miDebuggerPath": "C:/mingw64/bin/gdb.exe",
       "setupCommands": [
         {
           "description": "Enable pretty-printing for gdb",
