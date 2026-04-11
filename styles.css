@@ -1,84 +1,52 @@
-/* Copyright 2000-2022 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license. */
-html {
-    font-family: Helvetica Neue, Helvetica, Arial, Lucida Grande, sans-serif;
+/* 主容器背景色 */
+.blue-bg {
+    background-color: rgb(0, 183, 255);
 }
 
-body {
-    color: #4C4C4C;
-    margin: 60px 60px 0 60px;
+/* 文本颜色样式 */
+.aqua-text {
+    color: aqua;
 }
 
-p {
-    font-size: 1em;
-    margin: 0 0 1em 0;
+.violet-text {
+    color: violet;
 }
 
-.grayout {
-    opacity: 0.6;
+/* 表格样式 */
+.data-table {
+    border-collapse: collapse;
+    width: 100%;
+    border: 1px solid #ddd;
 }
 
-body, input, select, textarea, th, td {
-    font-size: 1em;
+.data-table th,
+.data-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
 }
 
-li {
-    position: relative;
-    list-style: none;
+.data-table th {
+    background-color: #f2f2f2;
+    font-weight: bold;
 }
 
-label:hover {
-    color: #0C479D;
-    text-decoration: underline;
+/* 外部链接导航样式 */
+.external-links {
+    margin: 20px 0;
 }
 
-li::before {
-    content: "\23FA";
-    margin: 0;
+.external-links a {
+    display: inline-block;
+    margin-right: 15px;
+    padding: 8px 16px;
+    background-color: #007bff;
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+    transition: background-color 0.3s;
 }
 
-li input {
-    position: absolute;
-    left: 0;
-    margin-left: 0;
-    background: none;
-    opacity: 0;
-    z-index: 2;
-    cursor: pointer;
-    height: 1em;
-    width: 1em;
-    top: 0;
-}
-
-li input + ol {
-    margin: -15px 0 0 -44px;
-    height: 1em;
-}
-
-li input + ol > li {
-    display: none;
-    margin-left: -14px !important;
-    padding-left: 1px;
-}
-
-li label {
-    padding-left: 5px;
-}
-
-li input:checked + ol {
-    margin: -20px 0 0 -44px;
-    padding: 25px 0 0 80px;
-    height: auto;
-}
-
-li input:checked + ol > li {
-    display: block;
-    margin: 0 0 2px;
-}
-
-li input:checked + ol > li:last-child {
-    margin: 0 0 1px;
-}
-
-div.location {
-    margin-left: 40px;
+.external-links a:hover {
+    background-color: #0056b3;
 }
