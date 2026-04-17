@@ -134,3 +134,4 @@ spor_3_event = input("请输入第3个运动员的运动项目：")  # 输入第
 
 # 使用format格式化输出运动员欢迎语句
 print("热烈欢迎{0}运动员{1}、{2}运动员{3}、{4}运动员{5}参加本次运动会".format(spor_1_event, spor_1_name, spor_2_event, spor_2_name, spor_3_event, spor_3_name))
+

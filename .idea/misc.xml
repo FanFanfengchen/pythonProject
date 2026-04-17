@@ -1,10 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="Black">
+    <option name="pathToExecutable" value="C:\Users\Administrator\AppData\Local\Programs\Python\Python313\Scripts\black.exe" />
     <option name="sdkName" value="Python 3.13 (pythonProject)" />
   </component>
   <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.13" project-jdk-type="Python SDK" />
   <component name="PyreflyConfiguration">
+    <option name="enabled" value="true" />
+  </component>
+  <component name="PyrightConfiguration">
+    <option name="enabled" value="true" />
+  </component>
+  <component name="RuffConfiguration">
+    <option name="enabled" value="true" />
+  </component>
+  <component name="TyConfiguration">
     <option name="enabled" value="true" />
   </component>
 </project>
