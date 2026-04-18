@@ -32,18 +32,24 @@ class Sentence:
 
     def word_count(self):
         """计算句子的单词数量
-        
-        通过空格分割句子来计算单词数量，注意连续空格会被视为单个分隔符。
-        
+
+        通过空白字符分割句子来计算单词数量，能够正确处理连续空格、制表符、换行符等。
+
         Returns:
             整数，句子中的单词数量
-        
+
         Examples:
             >>> s = Sentence("Hello, world!")
             >>> s.word_count()
             2
+            >>> s = Sentence("Hello,  world!")  # 连续空格
+            >>> s.word_count()
+            2
+            >>> s = Sentence("Hello,\tworld!")  # 制表符
+            >>> s.word_count()
+            2
         """
-        return len(self.sentence.split(" "))
+        return len(self.sentence.split())
 
     def upper(self):
         """将句子转换为大写形式

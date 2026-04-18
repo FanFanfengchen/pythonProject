@@ -28,10 +28,42 @@ class TestSentence(unittest.TestCase):
 
     def test_word_count(self):
         """测试单词数量计算
-        
+
         验证 word_count 方法能够正确计算句子中的单词数量。
         """
         self.assertEqual(self.sentence.word_count(), 2)
+
+    def test_word_count_with_multiple_spaces(self):
+        """测试包含连续空格的单词数量计算
+
+        验证 word_count 方法能够正确处理包含连续空格的句子。
+        """
+        sentence = Sentence("Hello,  world!")
+        self.assertEqual(sentence.word_count(), 2)
+
+    def test_word_count_with_tab(self):
+        """测试包含制表符的单词数量计算
+
+        验证 word_count 方法能够正确处理包含制表符的句子。
+        """
+        sentence = Sentence("Hello,\tworld!")
+        self.assertEqual(sentence.word_count(), 2)
+
+    def test_word_count_with_newline(self):
+        """测试包含换行符的单词数量计算
+
+        验证 word_count 方法能够正确处理包含换行符的句子。
+        """
+        sentence = Sentence("Hello,\nworld!")
+        self.assertEqual(sentence.word_count(), 2)
+
+    def test_word_count_with_mixed_whitespace(self):
+        """测试包含混合空白字符的单词数量计算
+
+        验证 word_count 方法能够正确处理包含多种空白字符的句子。
+        """
+        sentence = Sentence("Hello,  \t\n  world!")
+        self.assertEqual(sentence.word_count(), 2)
 
     def test_upper(self):
         """测试大写转换
