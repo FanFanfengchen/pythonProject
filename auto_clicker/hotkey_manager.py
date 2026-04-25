@@ -61,7 +61,8 @@ class HotkeyManager:
                 print(f"注册热键失败: {e}")
                 return False
         elif PYNPUT_AVAILABLE:
-            # pynput的热键注册逻辑
+            # TODO: 实现pynput的热键注册逻辑
+            # 由于pynput的热键实现与keyboard模块差异较大，暂不支持
             print("pynput模块的热键注册功能暂未实现")
             return False
         else:
@@ -73,7 +74,8 @@ class HotkeyManager:
         if KEYBOARD_AVAILABLE:
             keyboard.unhook_all()
         elif PYNPUT_AVAILABLE:
-            # pynput的热键移除逻辑
+            # TODO: 实现pynput的热键移除逻辑
+            # 由于pynput的热键实现与keyboard模块差异较大，暂不支持
             print("pynput模块的热键移除功能暂未实现")
         self.hotkeys.clear()
         
@@ -162,6 +164,8 @@ class HotkeyManager:
             
             return None
         elif PYNPUT_AVAILABLE:
+            # TODO: 实现pynput的热键捕获逻辑
+            # 由于pynput的热键实现与keyboard模块差异较大，暂不支持
             messagebox.showinfo("提示", "pynput模块的热键捕获功能暂未实现")
             return None
         else:
