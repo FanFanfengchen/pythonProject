@@ -90,13 +90,23 @@ class TrayIconManager:
         Returns:
             图标图像
         """
-        width = 64
-        height = 64
-        image = Image.new('RGB', (width, height), (0, 128, 255))
-        draw = ImageDraw.Draw(image)
-        draw.ellipse((16, 16, 48, 48), fill=(255, 255, 255))
-        draw.ellipse((24, 24, 40, 40), fill=(0, 128, 255))
-        return image
+        try:
+            width = 64
+            height = 64
+            image = Image.new('RGB', (width, height), (0, 128, 255))
+            draw = ImageDraw.Draw(image)
+            draw.ellipse((16, 16, 48, 48), fill=(255, 255, 255))
+            draw.ellipse((24, 24, 40, 40), fill=(0, 128, 255))
+            return image
+        except Exception as e:
+            print(f"创建图标失败: {e}")
+            # 提供默认图标
+            width = 64
+            height = 64
+            default_image = Image.new('RGB', (width, height), (255, 0, 0))
+            draw = ImageDraw.Draw(default_image)
+            draw.text((10, 25), "AC", fill=(255, 255, 255), font=None)
+            return default_image
         
     def _create_menu(self) -> TrayMenu:
         """创建系统托盘菜单

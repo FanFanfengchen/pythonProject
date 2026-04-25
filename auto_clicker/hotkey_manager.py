@@ -10,13 +10,15 @@ from typing import Dict, Callable, Optional, Any
 
 # 尝试导入keyboard模块，如果失败则尝试pynput作为替代
 KEYBOARD_AVAILABLE = False
+PYNPUT_AVAILABLE = False
 try:
     import keyboard
     KEYBOARD_AVAILABLE = True
+    print("使用keyboard模块进行热键管理")
 except ImportError:
     try:
         from pynput import keyboard as pynput_keyboard
-        KEYBOARD_AVAILABLE = False  # 使用pynput模式
+        PYNPUT_AVAILABLE = True
         print("提示：使用pynput替代keyboard模块")
     except ImportError:
         print("错误：未找到keyboard或pynput模块")
@@ -46,26 +48,33 @@ class HotkeyManager:
         Returns:
             是否注册成功
         """
-        if not KEYBOARD_AVAILABLE:
-            print("热键功能不可用，缺少keyboard模块")
+        if KEYBOARD_AVAILABLE:
+            try:
+                keyboard.add_hotkey(key_combination, callback, suppress=suppress)
+                self.hotkeys[name] = {
+                    'combination': key_combination,
+                    'callback': callback,
+                    'suppress': suppress
+                }
+                return True
+            except Exception as e:
+                print(f"注册热键失败: {e}")
+                return False
+        elif PYNPUT_AVAILABLE:
+            # pynput的热键注册逻辑
+            print("pynput模块的热键注册功能暂未实现")
             return False
-            
-        try:
-            keyboard.add_hotkey(key_combination, callback, suppress=suppress)
-            self.hotkeys[name] = {
-                'combination': key_combination,
-                'callback': callback,
-                'suppress': suppress
-            }
-            return True
-        except Exception as e:
-            print(f"注册热键失败: {e}")
+        else:
+            print("热键功能不可用，缺少keyboard或pynput模块")
             return False
             
     def unregister_all(self) -> None:
         """移除所有热键"""
         if KEYBOARD_AVAILABLE:
             keyboard.unhook_all()
+        elif PYNPUT_AVAILABLE:
+            # pynput的热键移除逻辑
+            print("pynput模块的热键移除功能暂未实现")
         self.hotkeys.clear()
         
     def start_listening(self) -> None:
@@ -99,62 +108,65 @@ class HotkeyManager:
         Returns:
             捕获的热键组合
         """
-        if not KEYBOARD_AVAILABLE:
-            messagebox.showerror("错误", "热键功能不可用，缺少keyboard模块")
+        if KEYBOARD_AVAILABLE:
+            captured_keys = []
+            is_capturing = True
+            
+            # 创建捕获提示窗口
+            capture_window = self._create_capture_window(root)
+            
+            # 捕获线程
+            def capture_thread_func():
+                nonlocal captured_keys, is_capturing
+                
+                # 移除现有的热键监听，避免干扰
+                keyboard.unhook_all()
+                
+                # 监听键盘事件
+                while is_capturing:
+                    try:
+                        # 使用阻塞方式读取事件，减少CPU占用
+                        event = keyboard.read_event(suppress=True)
+                        
+                        if event.event_type == 'down':
+                            key = event.name
+                            if key not in captured_keys:
+                                captured_keys.append(key)
+                        elif event.event_type == 'up':
+                            if event.name == 'enter':
+                                # 回车键结束捕获
+                                is_capturing = False
+                                capture_window.after(100, capture_window.destroy)
+                    except Exception as e:
+                        print(f"捕获热键时发生错误: {e}")
+                        pass
+            
+            # 启动捕获线程
+            capture_thread = threading.Thread(target=capture_thread_func)
+            capture_thread.daemon = True
+            capture_thread.start()
+            
+            # 等待捕获完成
+            root.wait_window(capture_window)
+            
+            # 格式化热键
+            if captured_keys:
+                # 移除回车键
+                if 'enter' in captured_keys:
+                    captured_keys.remove('enter')
+                # 排序按键（ctrl, alt, shift 在前）
+                modifiers = ['ctrl', 'alt', 'shift', 'win']
+                sorted_keys = sorted(captured_keys, key=lambda k: (k not in modifiers, k))
+                hotkey_str = '+'.join(sorted_keys)
+                return hotkey_str
+            
             return None
-            
-        captured_keys = []
-        is_capturing = True
-        
-        # 创建捕获提示窗口
-        capture_window = self._create_capture_window(root)
-        
-        # 捕获线程
-        def capture_thread_func():
-            nonlocal captured_keys, is_capturing
-            
-            # 移除现有的热键监听，避免干扰
-            keyboard.unhook_all()
-            
-            # 监听键盘事件
-            while is_capturing:
-                try:
-                    # 使用阻塞方式读取事件，减少CPU占用
-                    event = keyboard.read_event(suppress=True)
-                    
-                    if event.event_type == 'down':
-                        key = event.name
-                        if key not in captured_keys:
-                            captured_keys.append(key)
-                    elif event.event_type == 'up':
-                        if event.name == 'enter':
-                            # 回车键结束捕获
-                            is_capturing = False
-                            capture_window.after(100, capture_window.destroy)
-                except Exception as e:
-                    print(f"捕获热键时发生错误: {e}")
-                    pass
-        
-        # 启动捕获线程
-        capture_thread = threading.Thread(target=capture_thread_func)
-        capture_thread.daemon = True
-        capture_thread.start()
-        
-        # 等待捕获完成
-        root.wait_window(capture_window)
-        
-        # 格式化热键
-        if captured_keys:
-            # 移除回车键
-            if 'enter' in captured_keys:
-                captured_keys.remove('enter')
-            # 排序按键（ctrl, alt, shift 在前）
-            modifiers = ['ctrl', 'alt', 'shift', 'win']
-            sorted_keys = sorted(captured_keys, key=lambda k: (k not in modifiers, k))
-            hotkey_str = '+'.join(sorted_keys)
-            return hotkey_str
-        
-        return None
+        elif PYNPUT_AVAILABLE:
+            messagebox.showinfo("提示", "pynput模块的热键捕获功能暂未实现")
+            return None
+        else:
+            messagebox.showerror("错误", "热键功能不可用，缺少keyboard或pynput模块")
+            return None
         
     def _create_capture_window(self, root: Any) -> Any:
         """创建热键捕获窗口
