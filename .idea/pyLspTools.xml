@@ -1,12 +1,53 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="PyreflyConfiguration2">
+    <option name="documentation" value="true" />
+    <option name="enabled" value="true" />
+    <option name="inlayHints" value="true" />
+  </component>
   <component name="PyrightConfiguration">
     <option name="enabled" value="true" />
+  </component>
+  <component name="PyrightModuleSettingsStorage">
+    <option name="moduleSettings">
+      <map>
+        <entry key="pythonProject">
+          <value>
+            <PyrightModuleSettingsData>
+              <option name="enabled" value="true" />
+            </PyrightModuleSettingsData>
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
   <component name="RuffConfiguration">
     <option name="enabled" value="true" />
   </component>
-  <component name="TyConfiguration">
-    <option name="enabled" value="true" />
+  <component name="RuffModuleSettingsStorage">
+    <option name="moduleSettings">
+      <map>
+        <entry key="pythonProject">
+          <value>
+            <RuffModuleSettingsData>
+              <option name="enabled" value="true" />
+            </RuffModuleSettingsData>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="TyModuleSettingsStorage">
+    <option name="moduleSettings">
+      <map>
+        <entry key="pythonProject">
+          <value>
+            <TyModuleSettingsData>
+              <option name="enabled" value="true" />
+            </TyModuleSettingsData>
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
 </project>
