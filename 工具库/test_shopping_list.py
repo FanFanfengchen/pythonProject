@@ -4,7 +4,7 @@
 """
 
 import unittest
-from 核心.供购物清单的管理 import ShoppingList
+from 工具库.供购物清单的管理 import ShoppingList
 
 class TestShoppingList(unittest.TestCase):
     """测试 ShoppingList 类的测试类

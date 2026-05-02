@@ -4,7 +4,7 @@
 """
 
 import unittest
-from 核心.句子的基本操作 import Sentence
+from 工具库.句子的基本操作 import Sentence
 
 class TestSentence(unittest.TestCase):
     """测试 Sentence 类的测试类
