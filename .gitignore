@@ -38,6 +38,9 @@ env/
 .cache/
 *.log
 
+# Agent/Tool configs
+.trae/
+
 # OS
 .DS_Store
 Thumbs.db
