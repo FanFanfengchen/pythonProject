@@ -7,48 +7,59 @@ from pathlib import Path
 if sys.platform == "win32":
     import winsound
 
-CONFIG_FILE = "../AI/exam_config.json"
-HISTORY_FILE = "exam_history.log"
 
-class ExamManager:
-    """考试管理核心类"""
+class ConfigManager:
+    """配置文件管理类"""
 
-    def __init__(self):
-        self.exam_queue = []
-        self.current_exam = None
-        self.history = []
-        self._load_config()
+    def __init__(self, config_dir=None):
+        """
+        初始化配置管理器
 
-    def _load_config(self):
-        """加载JSON配置文件"""
+        Args:
+            config_dir: 配置文件目录，如果为None则使用用户主目录下的.exam_timer目录
+        """
+        if config_dir is None:
+            self.config_dir = Path.home() / ".exam_timer"
+        else:
+            self.config_dir = Path(config_dir)
+
+        self.config_dir.mkdir(parents=True, exist_ok=True)
+
+        self.config_file = self.config_dir / "exam_config.json"
+        self.history_file = self.config_dir / "exam_history.log"
+
+    def load_config(self):
+        """
+        加载配置文件
+
+        Returns:
+            list: 考试配置列表
+        """
         try:
-            config_path = Path(CONFIG_FILE)
-            if not config_path.exists():
-                self._create_sample_config()
+            if not self.config_file.exists():
+                self.create_sample_config()
 
-            with open(config_path, 'r', encoding='utf-8') as f:
-                exams = json.load(f)
-                self.exam_queue = sorted(
-                    [self._parse_exam(e) for e in exams],
-                    key=lambda x: x["start_time"]
-                )
+            with open(self.config_file, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except json.JSONDecodeError as e:
+            raise ValueError(f"配置文件格式错误: {str(e)}")
         except Exception as e:
-            messagebox.showerror("配置错误", f"配置文件加载失败: {str(e)}")
-            sys.exit(1)
+            raise RuntimeError(f"配置文件加载失败: {str(e)}")
 
-    @staticmethod
-    def _parse_exam(exam_data):
-        """解析考试数据"""
-        return {
-            "subject": exam_data["subject"],
-            "start_time": datetime.strptime(
-                exam_data["start_time"], "%Y-%m-%d %H:%M"
-            ),
-            "duration": exam_data["duration"] * 60  # 转换为秒
-        }
+    def save_config(self, config):
+        """
+        保存配置文件
 
-    @staticmethod
-    def _create_sample_config():
+        Args:
+            config: 配置数据
+        """
+        try:
+            with open(self.config_file, 'w', encoding='utf-8') as f:
+                json.dump(config, f, indent=2, ensure_ascii=False)
+        except Exception as e:
+            raise RuntimeError(f"配置文件保存失败: {str(e)}")
+
+    def create_sample_config(self):
         """创建示例配置文件"""
         sample_data = [
             {
@@ -62,8 +73,60 @@ class ExamManager:
                 "duration": 90
             }
         ]
-        with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
-            json.dump(sample_data, f, indent=2, ensure_ascii=False)
+        self.save_config(sample_data)
+
+    def append_history(self, history_entry):
+        """
+        追加历史记录
+
+        Args:
+            history_entry: 历史记录条目
+        """
+        try:
+            with open(self.history_file, 'a', encoding='utf-8') as f:
+                f.write(json.dumps(history_entry, ensure_ascii=False) + '\n')
+        except Exception as e:
+            raise RuntimeError(f"历史记录写入失败: {str(e)}")
+
+
+class ExamManager:
+    """考试管理核心类"""
+
+    def __init__(self, config_manager=None):
+        """
+        初始化考试管理器
+
+        Args:
+            config_manager: 配置管理器实例，如果为None则创建默认实例
+        """
+        self.config_manager = config_manager or ConfigManager()
+        self.exam_queue = []
+        self.current_exam = None
+        self.history = []
+        self._load_config()
+
+    def _load_config(self):
+        """加载配置文件"""
+        try:
+            exams = self.config_manager.load_config()
+            self.exam_queue = sorted(
+                [self._parse_exam(e) for e in exams],
+                key=lambda x: x["start_time"]
+            )
+        except Exception as e:
+            messagebox.showerror("配置错误", f"配置文件加载失败: {str(e)}")
+            sys.exit(1)
+
+    @staticmethod
+    def _parse_exam(exam_data):
+        """解析考试数据"""
+        return {
+            "subject": exam_data["subject"],
+            "start_time": datetime.strptime(
+                exam_data["start_time"], "%Y-%m-%d %H:%M"
+            ),
+            "duration": exam_data["duration"] * 60
+        }
 
     def get_next_exam(self):
         """获取下一个有效考试"""
@@ -83,12 +146,10 @@ class ExamManager:
             "status": status
         }
         self.history.append(entry)
-        self._save_history()
-
-    def _save_history(self):
-        """保存历史记录到文件"""
-        with open(HISTORY_FILE, 'a', encoding='utf-8') as f:
-            f.write(json.dumps(self.history[-1], ensure_ascii=False) + '\n')
+        try:
+            self.config_manager.append_history(entry)
+        except Exception as e:
+            print(f"历史记录保存失败: {str(e)}")
 
 
 class EnhancedExamTimer(ExamManager):
@@ -150,7 +211,7 @@ class EnhancedExamTimer(ExamManager):
             self._update_loop()
         except Exception as inner_e:
             messagebox.showerror("输入错误", f"输入格式错误: {str(inner_e)}")
-            print(f"输入错误: {str(inner_e)}")  # 打印详细的错误信息到控制台
+            print(f"输入错误: {str(inner_e)}")
 
     def _update_loop(self):
         """主计时循环"""
@@ -184,7 +245,6 @@ class EnhancedExamTimer(ExamManager):
 
     def _update_display(self):
         """更新所有显示组件"""
-        # 考试信息
         self.current_time_label.config(text=datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
         if self.current_exam:
             info_text = [
@@ -224,4 +284,4 @@ if __name__ == "__main__":
         app.root.mainloop()
     except Exception as main_e:
         messagebox.showerror("系统错误", f"程序异常终止: {str(main_e)}")
-        print(f"系统错误: {str(main_e)}")  # 打印详细的错误信息到控制台
+        print(f"系统错误: {str(main_e)}")
