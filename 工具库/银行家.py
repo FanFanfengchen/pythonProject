@@ -10,28 +10,113 @@ import hashlib
 import logging
 import random
 import os
+import base64
 from dataclasses import dataclass, field
 from decimal import Decimal, InvalidOperation
 from datetime import datetime
 from typing import Optional
 
-# ── 加密工具函数 ───────────────────────────────────────────────────────────────
+# ── 安全加密模块 ───────────────────────────────────────────────────────────────
+# 使用 cryptography 库的 Fernet 实现 AES 加密
+# Fernet 自动处理: AES-128-CBC 加密、HMAC-SHA256 认证、IV 生成、密钥派生
 
-def generate_key(password: str) -> bytes:
+try:
+    from cryptography.fernet import Fernet
+    from cryptography.hazmat.primitives import hashes
+    from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+    from cryptography.hazmat.backends import default_backend
+    CRYPTOGRAPHY_AVAILABLE = True
+except ImportError:
+    CRYPTOGRAPHY_AVAILABLE = False
+    print("警告：未安装 cryptography 库，将使用不安全的XOR加密作为降级方案")
+
+def derive_fernet_key(password: str, salt: bytes = None) -> tuple:
     """
-    从密码生成加密密钥
+    从密码派生 Fernet 加密密钥
     
     Args:
-        password: 用于生成密钥的密码
+        password: 用户提供的密码短语
+        salt: 盐值，如果为None则生成新盐值
         
     Returns:
-        bytes: 16字节的密钥
+        tuple: (Fernet密钥, 盐值)
     """
-    return hashlib.sha256(password.encode()).digest()[:16]
+    if salt is None:
+        # 生成16字节的随机盐值
+        salt = os.urandom(16)
+    
+    # 使用 PBKDF2HMAC 进行密钥派生
+    kdf = PBKDF2HMAC(
+        algorithm=hashes.SHA256(),
+        length=32,
+        salt=salt,
+        iterations=480000,
+        backend=default_backend()
+    )
+    key = base64.urlsafe_b64encode(kdf.derive(password.encode()))
+    
+    return key, salt
 
-def encrypt_data(data: str, key: bytes) -> bytes:
+def encrypt_data(data: str, password: str) -> bytes:
     """
-    使用XOR加密数据（简单但有效，适合演示）
+    使用 Fernet (AES-128-CBC) 加密数据
+    
+    Args:
+        data: 要加密的字符串数据
+        password: 加密密码
+        
+    Returns:
+        bytes: 加密后的数据（格式：SALT:ENCRYPTED_DATA）
+    """
+    if not CRYPTOGRAPHY_AVAILABLE:
+        # 降级方案：使用XOR加密（仅用于演示，生产环境应安装cryptography）
+        return _fallback_xor_encrypt(data, password)
+    
+    try:
+        key, salt = derive_fernet_key(password)
+        fernet = Fernet(key)
+        encrypted_data = fernet.encrypt(data.encode('utf-8'))
+        # 返回格式：盐值(16字节) + 分隔符 + 加密数据
+        return salt + b'::Fernet::' + encrypted_data
+    except Exception as e:
+        print(f"加密失败: {e}")
+        # 降级到XOR加密
+        return _fallback_xor_encrypt(data, password)
+
+def decrypt_data(encrypted_data: bytes, password: str) -> str:
+    """
+    使用 Fernet (AES-128-CBC) 解密数据
+    
+    Args:
+        encrypted_data: 加密的数据（支持旧格式自动检测）
+        password: 解密密码
+        
+    Returns:
+        str: 解密后的字符串数据
+    """
+    if not CRYPTOGRAPHY_AVAILABLE:
+        # 降级方案：使用XOR解密
+        return _fallback_xor_decrypt(encrypted_data, password)
+    
+    try:
+        # 检查是否为 Fernet 格式（包含分隔符）
+        if b'::Fernet::' in encrypted_data:
+            # 新格式：盐值 + 分隔符 + 加密数据
+            salt, encrypted_part = encrypted_data.split(b'::Fernet::', 1)
+            key, _ = derive_fernet_key(password, salt)
+            fernet = Fernet(key)
+            decrypted_data = fernet.decrypt(encrypted_part)
+            return decrypted_data.decode('utf-8')
+        else:
+            # 旧格式：纯XOR加密，尝试降级解密
+            return _fallback_xor_decrypt(encrypted_data, password)
+    except Exception as e:
+        print(f"解密失败，尝试降级方案: {e}")
+        return _fallback_xor_decrypt(encrypted_data, password)
+
+def _fallback_xor_encrypt(data: str, key: str) -> bytes:
+    """
+    XOR加密降级方案（仅在cryptography不可用时使用）
     
     Args:
         data: 要加密的数据
@@ -40,15 +125,16 @@ def encrypt_data(data: str, key: bytes) -> bytes:
     Returns:
         bytes: 加密后的数据
     """
+    key_bytes = hashlib.sha256(key.encode()).digest()[:16]
     data_bytes = data.encode('utf-8')
     encrypted = bytearray()
     for i, byte in enumerate(data_bytes):
-        encrypted.append(byte ^ key[i % len(key)])
+        encrypted.append(byte ^ key_bytes[i % len(key_bytes)])
     return bytes(encrypted)
 
-def decrypt_data(encrypted_data: bytes, key: bytes) -> str:
+def _fallback_xor_decrypt(encrypted_data: bytes, key: str) -> str:
     """
-    使用XOR解密数据
+    XOR解密降级方案（仅在cryptography不可用时使用）
     
     Args:
         encrypted_data: 加密的数据
@@ -57,10 +143,36 @@ def decrypt_data(encrypted_data: bytes, key: bytes) -> str:
     Returns:
         str: 解密后的数据
     """
+    key_bytes = hashlib.sha256(key.encode()).digest()[:16]
     decrypted = bytearray()
     for i, byte in enumerate(encrypted_data):
-        decrypted.append(byte ^ key[i % len(key)])
+        decrypted.append(byte ^ key_bytes[i % len(key_bytes)])
     return decrypted.decode('utf-8')
+
+# ── 密钥管理工具 ───────────────────────────────────────────────────────────────
+
+def generate_secure_key() -> str:
+    """
+    生成安全的 Fernet 密钥（用于环境变量配置）
+    
+    Returns:
+        str: URL安全的base64编码密钥
+    """
+    return Fernet.generate_key().decode('utf-8')
+
+def get_encryption_password() -> str:
+    """
+    获取加密密码，优先从环境变量读取
+    
+    Returns:
+        str: 加密密码
+    """
+    password = os.getenv("BANK_ENCRYPTION_PASSWORD")
+    if password:
+        return password
+    
+    # 默认密码（生产环境应从安全的密钥管理系统获取）
+    return os.getenv("BANK_ENCRYPTION_KEY", "bank_secure_default_key_2024")
 
 # ── 日志配置 ─────────────────────────────────────────────────────────────────
 logger = logging.getLogger(__name__)
@@ -897,32 +1009,49 @@ class BankSystem:
         """
         从文件加载账户数据（支持加密）
         
+        使用 Fernet (AES-128-CBC) 加密算法保护敏感账户数据
+        支持自动检测旧格式（XOR加密）并进行降级处理
+        
         Returns:
             dict: 账户字典，键为账户ID，值为BankAccount对象
         """
         try:
-            # 获取加密密钥（从环境变量或使用默认密钥）
-            encryption_key = os.getenv("BANK_ENCRYPTION_KEY", "bank_default_key_123")
-            key = generate_key(encryption_key)
+            # 获取加密密码（优先从环境变量读取）
+            encryption_password = get_encryption_password()
             
             with open(self.data_file, 'rb') as f:
                 content = f.read()
-                
-                # 检查是否为加密格式（以加密标记开头）
-                if content.startswith(b'ENCRYPTED:'):
-                    # 解密数据
-                    encrypted_data = content[10:]
-                    json_str = decrypt_data(encrypted_data, key)
-                else:
-                    # 旧格式，直接读取
+            
+            if not content:
+                return {}
+            
+            json_str = ""
+            
+            # 检查数据格式
+            if content.startswith(b'ENCRYPTED:'):
+                # 旧加密格式（XOR）
+                encrypted_data = content[10:]
+                json_str = decrypt_data(encrypted_data, encryption_password)
+            elif b'::Fernet::' in content:
+                # 新加密格式（Fernet/AES）
+                json_str = decrypt_data(content, encryption_password)
+            else:
+                # 未加密格式
+                try:
                     json_str = content.decode('utf-8')
-                
-                data = json.loads(json_str)
-                accounts = {}
-                for account_id, account_data in data.items():
-                    accounts[account_id] = BankAccount.from_dict(account_data)
-                return accounts
-        except (FileNotFoundError, json.JSONDecodeError):
+                except UnicodeDecodeError:
+                    # 可能是旧的XOR加密数据（无标记）
+                    json_str = decrypt_data(content, encryption_password)
+            
+            data = json.loads(json_str)
+            accounts = {}
+            for account_id, account_data in data.items():
+                accounts[account_id] = BankAccount.from_dict(account_data)
+            return accounts
+        except FileNotFoundError:
+            return {}
+        except json.JSONDecodeError as e:
+            print(f"警告：数据文件格式错误 - {e}")
             return {}
         except Exception as e:
             print(f"警告：加载数据时发生错误 - {e}")
@@ -930,20 +1059,25 @@ class BankSystem:
     
     def _save_data(self):
         """
-        保存账户数据到文件（支持加密）
+        保存账户数据到文件（使用Fernet/AES加密）
+        
+        使用 Fernet 进行加密，包含自动生成的盐值和初始化向量
+        密钥通过 PBKDF2HMAC 从密码派生，迭代次数为480000
+        
+        Returns:
+            bool: 保存是否成功
         """
         try:
             data = {}
             for account_id, account in self.accounts.items():
                 data[account_id] = account.to_dict()
             
-            # 获取加密密钥（从环境变量或使用默认密钥）
-            encryption_key = os.getenv("BANK_ENCRYPTION_KEY", "bank_default_key_123")
-            key = generate_key(encryption_key)
+            # 获取加密密码（优先从环境变量读取）
+            encryption_password = get_encryption_password()
             
             json_str = json.dumps(data, ensure_ascii=False, indent=2)
-            # 加密数据并添加标记
-            encrypted_data = b'ENCRYPTED:' + encrypt_data(json_str, key)
+            # 使用 Fernet (AES-128-CBC) 加密数据
+            encrypted_data = encrypt_data(json_str, encryption_password)
             
             with open(self.data_file, 'wb') as f:
                 f.write(encrypted_data)
