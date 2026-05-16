@@ -15,6 +15,53 @@ from decimal import Decimal, InvalidOperation
 from datetime import datetime
 from typing import Optional
 
+# ── 加密工具函数 ───────────────────────────────────────────────────────────────
+
+def generate_key(password: str) -> bytes:
+    """
+    从密码生成加密密钥
+    
+    Args:
+        password: 用于生成密钥的密码
+        
+    Returns:
+        bytes: 16字节的密钥
+    """
+    return hashlib.sha256(password.encode()).digest()[:16]
+
+def encrypt_data(data: str, key: bytes) -> bytes:
+    """
+    使用XOR加密数据（简单但有效，适合演示）
+    
+    Args:
+        data: 要加密的数据
+        key: 加密密钥
+        
+    Returns:
+        bytes: 加密后的数据
+    """
+    data_bytes = data.encode('utf-8')
+    encrypted = bytearray()
+    for i, byte in enumerate(data_bytes):
+        encrypted.append(byte ^ key[i % len(key)])
+    return bytes(encrypted)
+
+def decrypt_data(encrypted_data: bytes, key: bytes) -> str:
+    """
+    使用XOR解密数据
+    
+    Args:
+        encrypted_data: 加密的数据
+        key: 解密密钥
+        
+    Returns:
+        str: 解密后的数据
+    """
+    decrypted = bytearray()
+    for i, byte in enumerate(encrypted_data):
+        decrypted.append(byte ^ key[i % len(key)])
+    return decrypted.decode('utf-8')
+
 # ── 日志配置 ─────────────────────────────────────────────────────────────────
 logger = logging.getLogger(__name__)
 
@@ -848,32 +895,58 @@ class BankSystem:
     
     def _load_data(self):
         """
-        从文件加载账户数据
+        从文件加载账户数据（支持加密）
         
         Returns:
             dict: 账户字典，键为账户ID，值为BankAccount对象
         """
         try:
-            with open(self.data_file, 'r', encoding='utf-8') as f:
-                data = json.load(f)
+            # 获取加密密钥（从环境变量或使用默认密钥）
+            encryption_key = os.getenv("BANK_ENCRYPTION_KEY", "bank_default_key_123")
+            key = generate_key(encryption_key)
+            
+            with open(self.data_file, 'rb') as f:
+                content = f.read()
+                
+                # 检查是否为加密格式（以加密标记开头）
+                if content.startswith(b'ENCRYPTED:'):
+                    # 解密数据
+                    encrypted_data = content[10:]
+                    json_str = decrypt_data(encrypted_data, key)
+                else:
+                    # 旧格式，直接读取
+                    json_str = content.decode('utf-8')
+                
+                data = json.loads(json_str)
                 accounts = {}
                 for account_id, account_data in data.items():
                     accounts[account_id] = BankAccount.from_dict(account_data)
                 return accounts
         except (FileNotFoundError, json.JSONDecodeError):
             return {}
+        except Exception as e:
+            print(f"警告：加载数据时发生错误 - {e}")
+            return {}
     
     def _save_data(self):
         """
-        保存账户数据到文件
+        保存账户数据到文件（支持加密）
         """
         try:
             data = {}
             for account_id, account in self.accounts.items():
                 data[account_id] = account.to_dict()
             
-            with open(self.data_file, 'w', encoding='utf-8') as f:
-                json.dump(data, f, ensure_ascii=False, indent=2)
+            # 获取加密密钥（从环境变量或使用默认密钥）
+            encryption_key = os.getenv("BANK_ENCRYPTION_KEY", "bank_default_key_123")
+            key = generate_key(encryption_key)
+            
+            json_str = json.dumps(data, ensure_ascii=False, indent=2)
+            # 加密数据并添加标记
+            encrypted_data = b'ENCRYPTED:' + encrypt_data(json_str, key)
+            
+            with open(self.data_file, 'wb') as f:
+                f.write(encrypted_data)
             return True
         except Exception as e:
             print(f"错误：保存数据失败 - {e}")
