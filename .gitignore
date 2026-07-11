@@ -37,6 +37,7 @@ env/
 # Cache
 .cache/
 *.log
+logs/
 
 # Agent/Tool configs
 .trae/
@@ -44,14 +45,42 @@ env/
 # OS
 .DS_Store
 Thumbs.db
+desktop.ini
 
 # Compiled files
 *.pyc
 *.pyo
 *.pyd
-.Python
 *.c
 *.o
 *.so
 *.dylib
 compile_commands.json
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.backup
+
+# Local directories
+任务/
+剧情/
+歌单/
+
+# Scrapy logs
+scrapy.log
+
+# Jupyter notebooks
+.ipynb_checkpoints/
+*.ipynb
+
+# Pandas cache
+*.parquet
+*.feather
+*.h5
