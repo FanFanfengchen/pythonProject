@@ -11,16 +11,17 @@ const DEFAULT_NAVIGATE_CONFIG = {
   defaultMessage: "Select a problem element in tree"
 };
 
-function navigate(anId, config = DEFAULT_NAVIGATE_CONFIG) {
+function navigate(anId, config = {}) {
   if (!anId || typeof anId !== 'string') {
     console.warn('Invalid anId provided to navigate function');
     return;
   }
 
-  const { idPrefix, previewElementId, defaultMessage } = config;
+  const mergedConfig = { ...DEFAULT_NAVIGATE_CONFIG, ...config };
+  const { idPrefix, previewElementId, defaultMessage } = mergedConfig;
 
-  if (!idPrefix || !previewElementId) {
-    console.error('Invalid configuration: idPrefix and previewElementId are required');
+  if (!idPrefix || !previewElementId || typeof defaultMessage !== 'string') {
+    console.error('Invalid configuration: idPrefix, previewElementId and defaultMessage are required');
     return;
   }
 
