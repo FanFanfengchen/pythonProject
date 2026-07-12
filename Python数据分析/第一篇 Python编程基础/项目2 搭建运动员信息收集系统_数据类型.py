@@ -100,3 +100,5 @@ m11 = [1, 2]
 m11.extend('a')  #添加单个数据
 print(m11)
 n = [1, 1]
+n.extend([2, 3])
+print(n)

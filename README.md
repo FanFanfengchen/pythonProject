@@ -1,13 +1,23 @@
 # Python 项目整理 🐍
 
 <div align="center">
-  <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Python%20programming%20project%20logo%20with%20code%20snippets%20and%20modern%20design&image_size=square" alt="Python Project Logo" width="200">
+  <h2>Python Project Collection</h2>
+  <p>学习 · 实践 · 成长</p>
   
   <p align="center">
-    <a href="#项目概述"><img src="https://img.shields.io/badge/项目-概述-blue" alt="项目概述"></a>
-    <a href="#技术栈"><img src="https://img.shields.io/badge/技术-栈-orange" alt="技术栈"></a>
-    <a href="#核心功能模块"><img src="https://img.shields.io/badge/核心-功能-green" alt="核心功能"></a>
-    <a href="#测试"><img src="https://img.shields.io/badge/测试-通过-brightgreen" alt="测试通过"></a>
+    <span>[学习]</span>
+    <span>[工具]</span>
+    <span>[界面]</span>
+    <span>[游戏]</span>
+    <span>[爬虫]</span>
+    <span>[分析]</span>
+  </p>
+  
+  <p align="center">
+    <a href="#项目概述">📖 项目概述</a> | 
+    <a href="#技术栈">🛠️ 技术栈</a> | 
+    <a href="#核心功能模块">✨ 核心功能</a> | 
+    <a href="#测试">🧪 测试</a>
   </p>
 </div>
 
@@ -26,6 +36,7 @@
 - [更新日志](#更新日志)
 - [代码规范](#代码规范)
 - [贡献](#贡献)
+- [项目配置](#项目配置)
 
 ---
 
@@ -48,7 +59,8 @@
 
 | 类别 | 技术 | 版本 |
 |------|------|------|
-| 编程语言 | Python | 3.13+ |
+| 编程语言 | Python | 3.12+ |
+| 包管理器 | uv | 0.11+ |
 | 测试框架 | unittest | 标准库 |
 | 网络请求 | requests | 2.31+ |
 | 网页解析 | BeautifulSoup4 | 4.12+ |
@@ -97,8 +109,16 @@ PythonProject/
 │   └── 爬虫学习.py
 ├── 📁 旅途的开始/            # 项目初始代码（保留原样）
 ├── 📁 Python数据分析/        # 数据分析入门
+├── 📁 任务/                  # 任务管理文件
+├── 📁 剧情/                  # 剧情设计文件
+├── 📁 歌单/                  # 歌单收藏
+├── 📄 demo.html              # 前端演示页面
+├── 📄 script.js              # 前端交互脚本
+├── 📄 styles.css             # 前端样式文件
+├── 📄 config.json            # 项目配置文件
 ├── README.md
-└── requirements.txt
+├── requirements.txt
+└── test_import.py
 ```
 
 ---
@@ -178,7 +198,7 @@ print(f"总价格: {my_list.get_total_price()}")   # 40
 
 ## 环境要求
 
-- **Python 版本**: 3.13 或更高版本
+- **Python 版本**: 3.12 或更高版本
 - **操作系统**: Windows / macOS / Linux
 - **内存**: 至少 1GB RAM
 - **存储**: 至少 100MB 可用空间
@@ -194,13 +214,36 @@ git clone https://github.com/FanFanfengchen/pythonProject.git
 cd pythonProject
 ```
 
-### 2. 安装依赖
+### 2. 使用 uv 创建虚拟环境
 
 ```bash
-pip install -r requirements.txt
+uv venv
 ```
 
-### 3. 验证安装
+### 3. 激活虚拟环境
+
+**Windows (PowerShell)**:
+```powershell
+.\.venv\Scripts\Activate.ps1
+```
+
+**Windows (CMD)**:
+```cmd
+.venv\Scripts\activate.bat
+```
+
+**macOS/Linux**:
+```bash
+source .venv/bin/activate
+```
+
+### 4. 安装依赖
+
+```bash
+uv pip install -r requirements.txt
+```
+
+### 5. 验证安装
 
 ```bash
 python -c "print('Python 项目整理安装成功！')"
@@ -243,6 +286,14 @@ python -m unittest discover 工具库
 ---
 
 ## 更新日志
+
+### v1.0.2 (2026-07-11)
+
+**项目整理**
+- ✨ 更新 `.gitignore` 配置，完善忽略规则
+- ✨ 添加 uv 包管理器使用指南
+- ✨ 更新项目结构文档，包含新增目录
+- ✨ 添加项目配置章节
 
 ### v1.0.1 (2026-05-09)
 
@@ -295,6 +346,51 @@ python -m unittest discover 工具库
 
 ---
 
+## 项目配置
+
+### pyproject.toml
+
+项目使用 `pyproject.toml` 进行标准化配置：
+
+```toml
+[project]
+name = "pythonproject"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = []
+```
+
+### uv.lock
+
+项目使用 `uv` 包管理器进行依赖管理，`uv.lock` 文件确保依赖版本的确定性和可复现性。
+
+### config.json
+
+项目配置文件，包含爬虫等模块的配置信息：
+
+```json
+{
+    "douban": {
+        "base_url": "https://movie.douban.com/top250",
+        "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+        "timeout": 10
+    }
+}
+```
+
+### .gitignore
+
+项目使用 `.gitignore` 排除以下文件和目录：
+
+- **虚拟环境**: `.venv/`, `venv/`, `env/`, `ENV/`
+- **Python 缓存**: `__pycache__/`, `*.pyc`, `*.pyo`
+- **IDE 配置**: `.idea/`, `.vscode/`, `.vs/`
+- **系统文件**: `.DS_Store`, `Thumbs.db`, `desktop.ini`
+- **数据库**: `*.db`, `*.sqlite`, `*.sqlite3`
+- **临时文件**: `*.tmp`, `*.bak`, `*.backup`
+
+---
+
 ## 许可证
 
 本项目仅供学习和参考使用。
@@ -309,4 +405,4 @@ python -m unittest discover 工具库
 
 ---
 
-*最后更新: 2026-05-09*
+*最后更新: 2026-07-12*

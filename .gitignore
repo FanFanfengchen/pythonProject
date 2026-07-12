@@ -68,11 +68,6 @@ compile_commands.json
 *.bak
 *.backup
 
-# Local directories
-任务/
-剧情/
-歌单/
-
 # Scrapy logs
 scrapy.log
 
