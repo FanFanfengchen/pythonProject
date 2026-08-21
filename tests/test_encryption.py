@@ -7,10 +7,10 @@ import unittest
 import os
 import sys
 
-# 添加工具库路径
+# 添加项目根路径
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from 工具库.银行家 import (
+from utils.银行家 import (
     encrypt_data, 
     decrypt_data, 
     derive_fernet_key,

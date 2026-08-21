@@ -4,7 +4,7 @@
 """
 
 import unittest
-from 工具库.简单的数学运算 import my_adder
+from utils.calculator import my_adder
 
 class TestMyAdder(unittest.TestCase):
     """测试 my_adder 函数的测试类

@@ -41,6 +41,8 @@ logs/
 
 # Agent/Tool configs
 .trae/
+.micode/
+.claude/
 
 # OS
 .DS_Store
@@ -79,3 +81,16 @@ scrapy.log
 *.parquet
 *.feather
 *.h5
+
+# Environment & secrets
+.env
+.env.*
+config.json
+
+# Package manager
+uv.lock
+
+# Personal / non-project files
+其他/
+前端练习/
+cL/
